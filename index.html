@@ -55,39 +55,34 @@ async function testSupabase() {
 
     try {
 
-        const url =
-            `${SUPABASE_URL}/rest/v1/pomiary?select=*&limit=1`;
+        const url = `${SUPABASE_URL}/rest/v1/pomiary?select=*&limit=1`;
+
+        console.log("Łączę z:", url);
 
         const response = await fetch(url, {
-            method: "GET",
             headers: {
-                "apikey": SUPABASE_KEY,
-                "Authorization": `Bearer ${SUPABASE_KEY}`
+                "apikey": SUPABASE_KEY
             }
         });
 
+        console.log("HTTP:", response.status);
+
         const tekst = await response.text();
 
-        if (!response.ok) {
-            throw new Error(
-                `HTTP ${response.status}\n${tekst}`
-            );
-        }
+        console.log("Odpowiedź:", tekst);
 
-        const dane = JSON.parse(tekst);
+        status.innerHTML =
+            `HTTP ${response.status}`;
 
-        status.innerHTML = "✅ Połączenie z Supabase działa";
-
-        wynik.textContent =
-            JSON.stringify(dane, null, 2);
+        wynik.textContent = tekst;
 
     } catch (error) {
 
-        status.innerHTML =
-            "❌ Błąd połączenia";
+        status.innerHTML = "❌ Błąd połączenia";
 
         wynik.textContent =
-            error.toString();
+            error.name + "\n" +
+            error.message;
 
         console.error(error);
     }
