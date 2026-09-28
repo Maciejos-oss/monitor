@@ -1,3 +1,4 @@
+
 <!--
 ==========================================================
  PROGRAM 01
@@ -7,6 +8,7 @@
 
 <!DOCTYPE html>
 <html lang="pl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,18 +19,37 @@
         body {
             font-family: Arial, sans-serif;
             margin: 40px;
+            max-width: 1000px;
         }
 
-        #status {
+        h1 {
+            margin-bottom: 30px;
+        }
+
+        .status {
             padding: 15px;
-            margin-top: 20px;
+            margin: 10px 0;
             border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .ok {
+            background: #e8f5e9;
+        }
+
+        .error {
+            background: #ffebee;
+        }
+
+        .info {
+            background: #e3f2fd;
         }
 
         pre {
-            background: #f4f4f4;
+            background: #f5f5f5;
             padding: 15px;
-            overflow: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
         }
     </style>
 </head>
@@ -37,60 +58,194 @@
 
     <h1>Test połączenia z Supabase</h1>
 
-    <div id="status">
-        Łączenie...
+    <div id="status" class="status info">
+        Rozpoczynam test...
     </div>
+
+    <h2>Wynik</h2>
 
     <pre id="wynik"></pre>
 
+
 <script>
 
-const SUPABASE_URL = "https://jgtoikbjhqzxxotwrwpa.supabase.co";
-const SUPABASE_KEY = "sb_publishable_E7mRiTRsoWRCUVCcAhDksQ_TpwI9stm";
+// ==========================================================
+// KONFIGURACJA
+// ==========================================================
+
+const SUPABASE_URL = "TUTAJ_WKLEJ_PROJECT_URL";
+
+const SUPABASE_KEY = "TUTAJ_WKLEJ_PUBLISHABLE_LUB_ANON_KEY";
+
+const TABELA = "pomiary";
+
+
+// ==========================================================
+// ELEMENTY HTML
+// ==========================================================
+
+const status = document.getElementById("status");
+const wynik = document.getElementById("wynik");
+
+
+// ==========================================================
+// FUNKCJA POMOCNICZA
+// ==========================================================
+
+function pokazStatus(tekst, typ) {
+
+    status.textContent = tekst;
+
+    status.className = "status " + typ;
+}
+
+
+// ==========================================================
+// TEST SUPABASE
+// ==========================================================
 
 async function testSupabase() {
 
-    const status = document.getElementById("status");
-    const wynik = document.getElementById("wynik");
+    wynik.textContent = "";
+
+    // ------------------------------------------------------
+    // TEST 1 — sprawdzenie konfiguracji
+    // ------------------------------------------------------
+
+    if (
+        SUPABASE_URL.includes("TUTAJ") ||
+        SUPABASE_KEY.includes("TUTAJ")
+    ) {
+
+        pokazStatus(
+            "❌ Nie uzupełniono danych Supabase",
+            "error"
+        );
+
+        wynik.textContent =
+            "Uzupełnij SUPABASE_URL oraz SUPABASE_KEY.";
+
+        return;
+    }
+
+
+    // ------------------------------------------------------
+    // TEST 2 — pokazanie adresu
+    // ------------------------------------------------------
+
+    pokazStatus(
+        "🔄 Łączenie z Supabase...",
+        "info"
+    );
+
+    const url =
+        `${SUPABASE_URL}/rest/v1/${TABELA}?select=*&limit=1`;
+
+
+    wynik.textContent =
+        "Adres zapytania:\n" +
+        url +
+        "\n\n";
+
+
+    // ------------------------------------------------------
+    // TEST 3 — zapytanie HTTP
+    // ------------------------------------------------------
 
     try {
 
-        const url = `${SUPABASE_URL}/rest/v1/pomiary?select=*&limit=1`;
-
-        console.log("Łączę z:", url);
-
         const response = await fetch(url, {
+
+            method: "GET",
+
             headers: {
-                "apikey": SUPABASE_KEY
+
+                "apikey": SUPABASE_KEY,
+
+                "Authorization":
+                    `Bearer ${SUPABASE_KEY}`
+
             }
+
         });
 
-        console.log("HTTP:", response.status);
+
+        // --------------------------------------------------
+        // Odczyt odpowiedzi
+        // --------------------------------------------------
 
         const tekst = await response.text();
 
-        console.log("Odpowiedź:", tekst);
 
-        status.innerHTML =
-            `HTTP ${response.status}`;
+        wynik.textContent +=
+            "HTTP STATUS: " +
+            response.status +
+            "\n\n" +
+            "ODPOWIEDŹ:\n" +
+            tekst;
 
-        wynik.textContent = tekst;
 
-    } catch (error) {
+        // --------------------------------------------------
+        // Sprawdzenie HTTP
+        // --------------------------------------------------
 
-        status.innerHTML = "❌ Błąd połączenia";
+        if (!response.ok) {
 
-        wynik.textContent =
-            error.name + "\n" +
+            pokazStatus(
+                `❌ Supabase odpowiedział błędem HTTP ${response.status}`,
+                "error"
+            );
+
+            return;
+        }
+
+
+        // --------------------------------------------------
+        // Sukces
+        // --------------------------------------------------
+
+        pokazStatus(
+            "✅ Połączenie z Supabase działa!",
+            "ok"
+        );
+
+    }
+
+    catch (error) {
+
+        // --------------------------------------------------
+        // Błąd przeglądarki / sieci / CORS
+        // --------------------------------------------------
+
+        pokazStatus(
+            "❌ Nie udało się wykonać zapytania",
+            "error"
+        );
+
+
+        wynik.textContent +=
+            "\n\n" +
+            "TYP BŁĘDU:\n" +
+            error.name +
+            "\n\n" +
+            "KOMUNIKAT:\n" +
             error.message;
+
 
         console.error(error);
     }
+
 }
+
+
+// ==========================================================
+// START
+// ==========================================================
 
 testSupabase();
 
 </script>
 
 </body>
+
 </html>
