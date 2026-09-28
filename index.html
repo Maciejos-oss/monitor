@@ -1,8 +1,8 @@
-
+html
 <!--
 ==========================================================
- PROGRAM 01
- TEST POŁĄCZENIA Z SUPABASE
+ PROGRAM 02
+ NAJPROSTSZY TEST POŁĄCZENIA Z SUPABASE
 ==========================================================
 -->
 
@@ -13,224 +13,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Test Supabase2</title>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            max-width: 1000px;
-        }
-
-        h1 {
-            margin-bottom: 30px;
-        }
-
-        .status {
-            padding: 15px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        .ok {
-            background: #e8f5e9;
-        }
-
-        .error {
-            background: #ffebee;
-        }
-
-        .info {
-            background: #e3f2fd;
-        }
-
-        pre {
-            background: #f5f5f5;
-            padding: 15px;
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-    </style>
+    <title>Test Supabase</title>
 </head>
 
 <body>
 
     <h1>Test połączenia z Supabase</h1>
 
-    <div id="status" class="status info">
-        Rozpoczynam test...
+    <div id="wynik">
+        Testuję połączenie...
     </div>
-
-    <h2>Wynik</h2>
-
-    <pre id="wynik"></pre>
 
 
 <script>
 
-// ==========================================================
-// KONFIGURACJA
-// ==========================================================
-
-const SUPABASE_URL = "https://jgtoikbjhqzxxotwrwpa.supabase.co";
-
-const SUPABASE_KEY = "sb_publishable_E7mRiTRsoWRCUVCcAhDksQ_TpwI9stm";
-
-const TABELA = "pomiary";
+const SUPABASE_URL =
+    "https://jgtoikbjhqzxxotwrwpa.supabase.co";
 
 
-// ==========================================================
-// ELEMENTY HTML
-// ==========================================================
+async function test() {
 
-const status = document.getElementById("status");
-const wynik = document.getElementById("wynik");
-
-
-// ==========================================================
-// FUNKCJA POMOCNICZA
-// ==========================================================
-
-function pokazStatus(tekst, typ) {
-
-    status.textContent = tekst;
-
-    status.className = "status " + typ;
-}
-
-
-// ==========================================================
-// TEST SUPABASE
-// ==========================================================
-
-async function testSupabase() {
-
-    wynik.textContent = "";
-
-    // ------------------------------------------------------
-    // TEST 1 — sprawdzenie konfiguracji
-    // ------------------------------------------------------
-
-    if (
-        SUPABASE_URL.includes("TUTAJ") ||
-        SUPABASE_KEY.includes("TUTAJ")
-    ) {
-
-        pokazStatus(
-            "❌ Nie uzupełniono danych Supabase",
-            "error"
-        );
-
-        wynik.textContent =
-            "Uzupełnij SUPABASE_URL oraz SUPABASE_KEY.";
-
-        return;
-    }
-
-
-    // ------------------------------------------------------
-    // TEST 2 — pokazanie adresu
-    // ------------------------------------------------------
-
-    pokazStatus(
-        "🔄 Łączenie z Supabase...",
-        "info"
-    );
-
-    const url =
-        `${SUPABASE_URL}/rest/v1/${TABELA}?select=*&limit=1`;
-
-
-    wynik.textContent =
-        "Adres zapytania:\n" +
-        url +
-        "\n\n";
-
-
-    // ------------------------------------------------------
-    // TEST 3 — zapytanie HTTP
-    // ------------------------------------------------------
+    const wynik = document.getElementById("wynik");
 
     try {
 
-        const response = await fetch(url, {
+        const response =
+            await fetch(SUPABASE_URL);
 
-            method: "GET",
-
-            headers: {
-
-                "apikey": SUPABASE_KEY,
-
-                "Authorization":
-                    `Bearer ${SUPABASE_KEY}`
-
-            }
-
-        });
-
-
-        // --------------------------------------------------
-        // Odczyt odpowiedzi
-        // --------------------------------------------------
-
-        const tekst = await response.text();
-
-
-        wynik.textContent +=
-            "HTTP STATUS: " +
-            response.status +
-            "\n\n" +
-            "ODPOWIEDŹ:\n" +
-            tekst;
-
-
-        // --------------------------------------------------
-        // Sprawdzenie HTTP
-        // --------------------------------------------------
-
-        if (!response.ok) {
-
-            pokazStatus(
-                `❌ Supabase odpowiedział błędem HTTP ${response.status}`,
-                "error"
-            );
-
-            return;
-        }
-
-
-        // --------------------------------------------------
-        // Sukces
-        // --------------------------------------------------
-
-        pokazStatus(
-            "✅ Połączenie z Supabase działa!",
-            "ok"
-        );
+        wynik.innerHTML =
+            "✅ Supabase odpowiada<br><br>" +
+            "HTTP: " +
+            response.status;
 
     }
 
     catch (error) {
 
-        // --------------------------------------------------
-        // Błąd przeglądarki / sieci / CORS
-        // --------------------------------------------------
-
-        pokazStatus(
-            "❌ Nie udało się wykonać zapytania",
-            "error"
-        );
-
-
-        wynik.textContent +=
-            "\n\n" +
-            "TYP BŁĘDU:\n" +
+        wynik.innerHTML =
+            "❌ Brak połączenia<br><br>" +
+            "Typ błędu: " +
             error.name +
-            "\n\n" +
-            "KOMUNIKAT:\n" +
+            "<br><br>" +
+            "Komunikat: " +
             error.message;
-
 
         console.error(error);
     }
@@ -238,14 +63,10 @@ async function testSupabase() {
 }
 
 
-// ==========================================================
-// START
-// ==========================================================
-
-testSupabase();
+test();
 
 </script>
-sup
+
 </body>
 
 </html>
